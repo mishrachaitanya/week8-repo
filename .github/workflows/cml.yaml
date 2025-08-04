@@ -1,38 +1,37 @@
-# .github/workflows/train.yml
-name: Train Iris Model
+name: Sanity test
 
 on:
-  push:
-    branches: [main, master, week8]
-  pull_request:
-    branches: [main, master, week8]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  train-and-report:
+  test_model:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.9"
 
-      - name: Install dependencies
+      - uses: iterative/setup-cml@v2
+
+      - name: run unit tests
         run: |
           pip install -r requirements.txt
-          pip install scikit-learn pandas joblib
-
-      - name: Train model and generate report
-        run: python train.py
+          python -m test 2>&1 > test_output.txt
 
       - name: Create CML report
-        uses: iterative/cml@v2
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          driver: github
-          report: report.md
-
+        run: |
+          echo "test output" >> report.md
+          echo "\`\`\`" >> report.md
+          cat test_output.txt >> report.md
+          echo "\`\`\`" >> report.md
+          echo "metrics from training" >> report.md
+          cat metrics.csv >> report.md
+          cml comment create --publish report.md
