@@ -1,4 +1,4 @@
-name: Iris Model Training
+name: Iris CML Report
 
 on:
   workflow_dispatch:
@@ -12,43 +12,33 @@ permissions:
   pull-requests: write
 
 jobs:
-  train_model:
+  train:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run training
-        run: |
-          python train.py > train_output.txt 2>&1
+        run: python train.py
 
-      - name: Set up CML
-        uses: iterative/setup-cml@v2
+      - uses: iterative/setup-cml@v2
 
       - name: Create CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "## 🚀 Training Output" >> report.md
-          echo "\`\`\`" >> report.md
-          cat train_output.txt >> report.md
-          echo "\`\`\`" >> report.md
-
-          echo "## 📊 Training Metrics" >> report.md
+          echo "## 📊 Metrics" > report.md
           echo "\`\`\`csv" >> report.md
           cat metrics.csv >> report.md
           echo "\`\`\`" >> report.md
-
+          echo "[View raw report file](./report.md)" >> report.md
           cml comment create --publish report.md
 
