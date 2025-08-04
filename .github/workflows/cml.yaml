@@ -14,29 +14,42 @@ permissions:
 jobs:
   test_model:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - uses: iterative/setup-cml@v2
-
-      - name: run unit tests
+      - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install -r requirements.txt
-          python -m test 2>&1 > test_output.txt
+          pip install pytest
+
+      - name: Run unit tests with pytest
+        run: |
+          pytest test.py > test_output.txt 2>&1
+
+      - name: Set up CML
+        uses: iterative/setup-cml@v2
 
       - name: Create CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "test output" >> report.md
+          echo "## ✅ Test Output" >> report.md
           echo "\`\`\`" >> report.md
           cat test_output.txt >> report.md
           echo "\`\`\`" >> report.md
-          echo "metrics from training" >> report.md
+          
+          echo "## 📊 Metrics from Training" >> report.md
+          echo "\`\`\`csv" >> report.md
           cat metrics.csv >> report.md
+          echo "\`\`\`" >> report.md
+          
           cml comment create --publish report.md
 
