@@ -1,8 +1,10 @@
-scikit-learn
-pandas
-joblib
-
 dvc
-pytest
+
+
+pandas
+scikit-learn
+joblib
 matplotlib
+dvc[gcs]
+cml
 
