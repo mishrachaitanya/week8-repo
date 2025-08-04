@@ -39,5 +39,6 @@ with open("metrics.csv", "w", newline="") as f:
 
 # Also print final results to stdout for train_output.txt
 print("Final Epoch Accuracy:", metrics[-1][1])
+
 print("Final Epoch Loss:", metrics[-1][2])
 
