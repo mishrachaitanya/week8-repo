@@ -1,0 +1,38 @@
+# .github/workflows/train.yml
+name: Train Iris Model
+
+on:
+  push:
+    branches: [main, master, week8]
+  pull_request:
+    branches: [main, master, week8]
+
+jobs:
+  train-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install scikit-learn pandas joblib
+
+      - name: Train model and generate report
+        run: python train.py
+
+      - name: Create CML report
+        uses: iterative/cml@v2
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          driver: github
+          report: report.md
+
