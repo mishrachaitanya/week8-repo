@@ -1,18 +1,17 @@
-name: Iris CML Report
+name: Minimal CML Report
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main, master, week8]
+    branches: [master, main, week8]
   pull_request:
-    branches: [main, master, week8]
+    branches: [master, main, week8]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  train:
+  train_and_report:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,23 +21,28 @@ jobs:
         with:
           python-version: "3.9"
 
+      - uses: iterative/setup-cml@v2
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
       - name: Run training
-        run: python train.py
+        run: |
+          python train.py
 
-      - uses: iterative/setup-cml@v2
+      - name: Generate plot
+        run: |
+          python plot_metrics.py
 
       - name: Create CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "## 📊 Metrics" > report.md
-          echo "\`\`\`csv" >> report.md
+          echo "# Iris Model Report" > report.md
+          echo "## Metrics Table" >> report.md
           cat metrics.csv >> report.md
-          echo "\`\`\`" >> report.md
-          echo "[View raw report file](./report.md)" >> report.md
+          echo "## Metrics Plot" >> report.md
+          echo "![Metrics](metrics_plot.png)" >> report.md
           cml comment create --publish report.md
 

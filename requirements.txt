@@ -4,3 +4,4 @@ joblib
 
 dvc
 pytest
+matplotlib
