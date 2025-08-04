@@ -2,6 +2,6 @@ pandas==1.5.3
 scikit-learn==1.2.2
 joblib==1.2.0
 matplotlib==3.7.1
-dvc[gcs]==3.38.1
-cml==0.10.10
+dvc[gcs]==2.57.0
+cml==0.5.10
 
