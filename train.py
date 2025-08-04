@@ -19,4 +19,5 @@ ax2.tick_params(axis='y', labelcolor='tab:red')
 
 fig.tight_layout()
 plt.title('Accuracy and Loss over Epochs')
+
 plt.savefig("plot.png")
