@@ -1,48 +1,44 @@
-name: Train and Report
+name: Run tagged experiment
 
 on:
-  push:
-    branches: [main, master, week8]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to run'
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  train:
+  run-training:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v3
         with:
-          python-version: '3.9'
+          ref: ${{ github.event.inputs.tag }}
 
-      - name: Install dependencies
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - uses: iterative/setup-cml@v2
+
+      - name: Run training
         run: |
           pip install -r requirements.txt
-            
+          python3 train.py
 
-      - name: Authenticate to GCS
-        env:
-          GCP_KEY_JSON: ${{ secrets.GCP_KEY_JSON }}
-        run: |
-          echo "$GCP_KEY_JSON" > key.json
-          dvc remote modify gcsremote credentialpath key.json
-
-      - name: Pull data with DVC
-        run: dvc pull
-
-      - name: Train model
-        run: python train.py
-
-      - name: Generate report
-        run: |
-          echo "# Training Report" > report.md
-          cat metrics.csv >> report.md
-          echo "![Metrics](metrics_plot.png)" >> report.md
-
-      - name: Post report as comment
+      - name: Report metrics
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cml comment create report.md
+        run: |
+          echo "## Metrics Report for ${{ github.event.inputs.tag }}" > report.md
+          echo '### Metrics Table' >> report.md
+          echo "\`\`\`" >> report.md
+          cat metrics.csv >> report.md
+          echo "\`\`\`" >> report.md
+          echo "![Metrics Plot](./metrics_plot.png)" >> report.md
+          cml comment create --publish report.md
 
