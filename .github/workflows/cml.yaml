@@ -2,6 +2,10 @@ name: Sanity test
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main, master, week8]
+  pull_request:
+    branches: [main, master, week8]
 
 permissions:
   contents: write
@@ -35,3 +39,4 @@ jobs:
           echo "metrics from training" >> report.md
           cat metrics.csv >> report.md
           cml comment create --publish report.md
+
