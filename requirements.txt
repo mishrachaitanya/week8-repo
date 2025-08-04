@@ -2,5 +2,4 @@ pandas
 scikit-learn
 joblib
 matplotlib
-dvc[gcs]
 cml
