@@ -1,7 +1,0 @@
-[core]
-    remote = gcsremote
-['remote "localremote"']
-    url = cache
-['remote "gcsremote"']
-    url = gs://dvc-bucket-1/dvcstore
-    credentialpath = /home/chaitanya353535_gmail_com/.config/gcloud/application_default_credentials.json
