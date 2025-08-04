@@ -2,7 +2,7 @@ name: Minimal CML Report
 
 on:
   push:
-    branches: [master, main, week8]
+    branches: [master, main, week8, w8]
   pull_request:
     branches: [master, main, week8]
 
