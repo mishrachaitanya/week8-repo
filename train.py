@@ -6,7 +6,7 @@ from sklearn.metrics import accuracy_score, log_loss
 from sklearn.preprocessing import LabelEncoder
 
 # Load training data
-train_df = pd.read_csv("train.csv")
+train_df = pd.read_csv("poisoned_train.csv")
 X_train = train_df.drop(columns=["target"])
 y_train = train_df["target"]
 
