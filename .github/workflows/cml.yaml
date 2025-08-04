@@ -1,4 +1,4 @@
-name: Sanity test
+name: Iris Model Training
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  test_model:
+  train_model:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,11 +28,10 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
 
-      - name: Run unit tests with pytest
+      - name: Run training
         run: |
-          pytest test.py > test_output.txt 2>&1
+          python train.py > train_output.txt 2>&1
 
       - name: Set up CML
         uses: iterative/setup-cml@v2
@@ -41,15 +40,15 @@ jobs:
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "## ✅ Test Output" >> report.md
+          echo "## 🚀 Training Output" >> report.md
           echo "\`\`\`" >> report.md
-          cat test_output.txt >> report.md
+          cat train_output.txt >> report.md
           echo "\`\`\`" >> report.md
-          
-          echo "## 📊 Metrics from Training" >> report.md
+
+          echo "## 📊 Training Metrics" >> report.md
           echo "\`\`\`csv" >> report.md
           cat metrics.csv >> report.md
           echo "\`\`\`" >> report.md
-          
+
           cml comment create --publish report.md
 
