@@ -2,14 +2,14 @@ name: Train and Report
 
 on:
   push:
-    branches: [master, main, week8]
+    branches: [main, master, week8]
 
 jobs:
   train:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -20,22 +20,20 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install  cml
+          pip install dvc[gcs] cml
 
-      - name: Set up GCP credentials
+      - name: Authenticate to GCS
         env:
           GCP_KEY_JSON: ${{ secrets.GCP_KEY_JSON }}
         run: |
           echo "$GCP_KEY_JSON" > key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=key.json
           dvc remote modify gcsremote credentialpath key.json
 
       - name: Pull data with DVC
         run: dvc pull
 
       - name: Train model
-        run: |
-          python train.py
+        run: python train.py
 
       - name: Generate report
         run: |
@@ -43,9 +41,8 @@ jobs:
           cat metrics.csv >> report.md
           echo "![Metrics](metrics_plot.png)" >> report.md
 
-      - name: Comment report on PR
+      - name: Post report as comment
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cml comment create report.md
+        run: cml comment create report.md
 
