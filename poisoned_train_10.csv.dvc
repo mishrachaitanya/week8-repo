@@ -1,0 +1,5 @@
+outs:
+- md5: 36b7db983c3d665a0da8bd15ab5ff71c
+  size: 2237
+  hash: md5
+  path: poisoned_train_10.csv

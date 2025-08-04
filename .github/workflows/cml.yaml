@@ -1,48 +1,51 @@
-name: Minimal CML Report
+name: Train and Report
 
 on:
   push:
     branches: [master, main, week8]
-  pull_request:
-    branches: [master, main, week8]
-
-permissions:
-  contents: write
-  pull-requests: write
 
 jobs:
-  train_and_report:
+  train:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
-
-      - uses: iterative/setup-cml@v2
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install dvc[gcs] cml
 
-      - name: Run training
+      - name: Set up GCP credentials
+        env:
+          GCP_KEY_JSON: ${{ secrets.GCP_KEY_JSON }}
+        run: |
+          echo "$GCP_KEY_JSON" > key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=key.json
+          dvc remote modify gcsremote credentialpath key.json
+
+      - name: Pull data with DVC
+        run: dvc pull
+
+      - name: Train model
         run: |
           python train.py
 
-      - name: Generate plot
+      - name: Generate report
         run: |
-          python plot_metrics.py
+          echo "# Training Report" > report.md
+          cat metrics.csv >> report.md
+          echo "![Metrics](metrics_plot.png)" >> report.md
 
-      - name: Create CML report
+      - name: Comment report on PR
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "# Iris Model Report" > report.md
-          echo "## Metrics Table" >> report.md
-          cat metrics.csv >> report.md
-          echo "## Metrics Plot" >> report.md
-          echo "![Metrics](metrics_plot.png)" >> report.md
-          cml comment create --publish report.md
+          cml comment create report.md
 
