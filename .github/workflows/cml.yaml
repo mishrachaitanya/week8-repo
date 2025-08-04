@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Git tag to run'
+        description: 'Git tag to run (e.g., run-5 for 5% poisoning)'
         required: true
 
 permissions:
@@ -19,14 +19,19 @@ jobs:
         with:
           ref: ${{ github.event.inputs.tag }}
 
-      
-
       - uses: iterative/setup-cml@v2
+
+      - name: Extract poisoning percentage from tag
+        id: extract
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          POISON_PERCENT=$(echo "$TAG" | grep -oP '\d+')
+          echo "poison=$POISON_PERCENT" >> $GITHUB_OUTPUT
 
       - name: Run training
         run: |
           pip install -r requirements.txt
-          python3 train.py 5
+          python3 train.py ${{ steps.extract.outputs.poison }}
 
       - name: Report metrics
         env:
